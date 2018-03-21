@@ -270,14 +270,16 @@ contract PausableToken is StandardToken, Pausable {
 }
 
 contract ConduitToken is PausableToken {
-    string public name = "ConduitPreSaleToken";
-    string public symbol = "CND";
-    uint public decimals = 18;
-    uint public INITIAL_SUPPLY = 186000000000000000000000000;
+    string public constant name = "Conduit Token";
+    string public constant symbol = "COND";
+    uint8 public constant decimals = 18;
 
-    function ConduitToken() public 
+    uint256 public constant DECIMALSFACTOR    = 10**uint256(decimals);
+    uint256 public constant TOKEN_TOTALSUPPLY = 1000000000 * DECIMALSFACTOR;
+
+    function ConduitToken() public
     {
-        totalSupply = INITIAL_SUPPLY;
-        balances[msg.sender] = INITIAL_SUPPLY;
+        totalSupply = TOKEN_TOTALSUPPLY;
+        balances[msg.sender] = TOKEN_TOTALSUPPLY;
     }
 }
