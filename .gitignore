@@ -3,7 +3,8 @@
 node_modules/
 # Log file
 *.log
-
+*.iml
+.idea/
 .DS_Store
 build/
 # BlueJ files
