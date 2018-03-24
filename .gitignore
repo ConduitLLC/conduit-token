@@ -4,6 +4,8 @@ node_modules/
 # Log file
 *.log
 
+.DS_Store
+build/
 # BlueJ files
 *.ctxt
 
