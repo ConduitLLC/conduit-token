@@ -5,29 +5,29 @@ pragma solidity ^0.4.21;
  */
 library SafeMath {
 
-  function Mul(uint a, uint b) internal pure returns (uint) {
-    uint256 c = a * b;
-    assert(a == 0 || c / a == b);
-    return c;
-  }
+    function Mul(uint a, uint b) internal pure returns (uint) {
+        uint256 c = a * b;
+        assert(a == 0 || c / a == b);
+        return c;
+    }
 
-  function Div(uint a, uint b) internal pure returns (uint) {
-    //assert(b > 0); // Solidity automatically throws when Dividing by 0
-    uint256 c = a / b;
-    // assert(a == b * c + a % b); // There is no case in which this doesn't hold
-    return c;
-  }
+    function Div(uint a, uint b) internal pure returns (uint) {
+        //assert(b > 0); // Solidity automatically throws when Dividing by 0
+        uint256 c = a / b;
+        // assert(a == b * c + a % b); // There is no case in which this doesn't hold
+        return c;
+    }
 
-  function Sub(uint a, uint b) internal pure returns (uint) {
-    assert(b <= a);
-    return a - b;
-  }
+    function Sub(uint a, uint b) internal pure returns (uint) {
+        assert(b <= a);
+        return a - b;
+    }
 
-  function Add(uint a, uint b) internal pure returns (uint) {
-    uint256 c = a + b;
-    assert(c >= a);
-    return c;
-  }
+    function Add(uint a, uint b) internal pure returns (uint) {
+        uint256 c = a + b;
+        assert(c >= a);
+        return c;
+    }
 }
 
 /**
@@ -50,28 +50,28 @@ contract ERC223ReceivingContract {
  */
 contract Ownable {
 
-  //owner variable to store contract owner account
-  address public owner;
-  //add another owner
-  address deployer;
+    //owner variable to store contract owner account
+    address public owner;
+    //add another owner
+    address deployer;
 
-  //Constructor for the contract to store owner's account on deployement
-  function Ownable() public {
-    owner = msg.sender;
-    deployer = msg.sender;
-  }
+    //Constructor for the contract to store owner's account on deployement
+    function Ownable() public {
+        owner = msg.sender;
+        deployer = msg.sender;
+    }
 
-  //modifier to check transaction initiator is only owner
-  modifier onlyOwner() {
-    require (msg.sender == owner || msg.sender == deployer);
-      _;
-  }
+    //modifier to check transaction initiator is only owner
+    modifier onlyOwner() {
+        require (msg.sender == owner || msg.sender == deployer);
+        _;
+    }
 
-  //ownership can be transferred to provided newOwner. Function can only be initiated by contract owner's account
-  function transferOwnership(address _newOwner) public onlyOwner {
-    require (_newOwner != address(0));
-    owner = _newOwner;
-  }
+    //ownership can be transferred to provided newOwner. Function can only be initiated by contract owner's account
+    function transferOwnership(address _newOwner) public onlyOwner {
+        require (_newOwner != address(0));
+        owner = _newOwner;
+    }
 
 }
 
@@ -80,56 +80,56 @@ contract Ownable {
  * @dev Base contract which allows children to implement an emergency stop mechanism.
  */
 contract Pausable is Ownable {
-  event Pause();
-  event Unpause();
+    event Pause();
+    event Unpause();
 
-  bool public paused = false;
-  uint256 public startTime;
-  uint256 public endTime;
-  uint256 private pauseTime;
+    bool public paused = false;
+    uint256 public startTime;
+    uint256 public endTime;
+    uint256 private pauseTime;
 
 
-  /**
-   * @dev Modifier to make a function callable only when the contract is not paused.
-   */
-  modifier whenNotPaused() {
-    require(!paused);
-    _;
-  }
-
-  /**
-   * @dev Modifier to make a function callable only when the contract is paused.
-   */
-  modifier whenPaused() {
-    require(paused);
-    _;
-  }
-
-  /**
-   * @dev called by the owner to pause, triggers stopped state
-   */
-  function pause() onlyOwner whenNotPaused public {
-    paused = true;
-    //Record the pausing time only if any startTime is defined
-    //in other cases, it will work as a toggle switch only
-    if(startTime > 0){
-        pauseTime = now;
+    /**
+     * @dev Modifier to make a function callable only when the contract is not paused.
+     */
+    modifier whenNotPaused() {
+        require(!paused);
+        _;
     }
-    emit Pause();
-  }
 
-  /**
-   * @dev called by the owner to unpause, returns to normal state
-   */
-  function unpause() onlyOwner whenPaused public {
-    paused = false;
-    //if endTime is defined, only then proceed with its updation
-    if(endTime > 0 && pauseTime > startTime){
-        uint256 pauseDuration = pauseTime - startTime;
-        endTime = endTime + pauseDuration;
+    /**
+     * @dev Modifier to make a function callable only when the contract is paused.
+     */
+    modifier whenPaused() {
+        require(paused);
+        _;
     }
-    emit Unpause();
-  }
+
+    /**
+     * @dev called by the owner to pause, triggers stopped state
+     */
+    function pause() onlyOwner whenNotPaused public {
+        paused = true;
+        //Record the pausing time only if any startTime is defined
+        //in other cases, it will work as a toggle switch only
+        if(startTime > 0){
+            pauseTime = now;
+        }
+        emit Pause();
+    }
+
+    /**
+     * @dev called by the owner to unpause, returns to normal state
+     */
+    function unpause() onlyOwner whenPaused public {
+        paused = false;
+        //if endTime is defined, only then proceed with its updation
+        if(endTime > 0 && pauseTime > startTime){
+            uint256 pauseDuration = pauseTime - startTime;
+            endTime = endTime + pauseDuration;
+        }
+        emit Unpause();
+    }
 }
 
 /**
@@ -157,6 +157,14 @@ contract COND is ERC20 {
     bool public locked;
     //The precision used in the calculations in contract
     uint8 public constant decimals = 18;
+    //PREICO start time
+    uint256 public constant PREICO_START_TIME=1521912072;// 1523318400 = 10 april 2018 (SOD)
+    //PREICO end time
+    uint256 public constant PREICO_END_TIME=1525305599;// 1525305599 = 2 may 2018 (EOD)
+    //PREICO start time
+    uint256 public constant ICO_START_TIME=1526428800;// 1523318400 = 16 may 2018
+    //PREICO end time
+    uint256 public constant ICO_END_TIME=1529107199;// 1525305600 = 15 june 2018 (eod)
     //number of tokens available for 1 eth
     uint256 public constant PRICE=2200;
     //maximum number of tokens
@@ -178,20 +186,16 @@ contract COND is ERC20 {
 
     function isSaleRunning() public view returns (bool){
         bool status = false;
-        // 1522972800 = 6 april 2018
-        // 1525392000 = 4 may 2018
-        // 1527811200 = 1 june 2018
-        // 1531094400 = 9 july 2018
-
+        
         //Presale is going on
-        if(now >= startTime  && now <= 1525392000){
-            //Aprill 6 to before 4 may
+        if(now >= PREICO_START_TIME  && now <= PREICO_END_TIME){
+            //Aprill 10 to before 2 may
             status = true;
         }
 
         //ICO is going on
-        if(now >= 1527811200 && now <= endTime){
-            // june 1 to before july 9
+        if(now >= ICO_START_TIME && now <= ICO_END_TIME){
+            // may 16 to before june 15
             status = true;
         }
         return status;
@@ -206,10 +210,10 @@ contract COND is ERC20 {
 
     function COND() public{
         totalSupply = 0;
-        startTime = 1522972800; //April 6, 2018 GMT
-        endTime = 1531094400; //9 july, 2018 GMT
+        startTime = PREICO_START_TIME; //April 10, 2018 GMT
+        endTime = ICO_END_TIME; //15 june, 2018 GMT
         locked = true;
-        setEthCollector(0xc8522E0444a94Ec9a5A08242765e1196DF1EC6B5);
+        setEthCollector(0x3536b9ac7b70f0e51277743cf71d745537c42420); //multisig wallet
     }
     //To handle ERC20 short address attack
     modifier onlyPayloadSize(uint size) {
@@ -321,18 +325,18 @@ contract COND is ERC20 {
     function transferFrom(address _from, address _to, uint256 _value) onlyPayloadSize(3*32) public onlyUnlocked returns (bool){
         bytes memory _empty;
         assert((_value > 0)
-           && (_to != address(0))
-           && (_from != address(0))
-           && (allowed[_from][msg.sender] >= _value ));
-       balances[_from] = balances[_from].Sub(_value);
-       balances[_to] = balances[_to].Add(_value);
-       allowed[_from][msg.sender] = allowed[_from][msg.sender].Sub(_value);
-       if(isContract(_to)){
-           ERC223ReceivingContract receiver = ERC223ReceivingContract(_to);
-           receiver.tokenFallback(msg.sender, _value, _empty);
-       }
-       emit Transfer(_from, _to, _value);
-       return true;
+        && (_to != address(0))
+        && (_from != address(0))
+            && (allowed[_from][msg.sender] >= _value ));
+        balances[_from] = balances[_from].Sub(_value);
+        balances[_to] = balances[_to].Add(_value);
+        allowed[_from][msg.sender] = allowed[_from][msg.sender].Sub(_value);
+        if(isContract(_to)){
+            ERC223ReceivingContract receiver = ERC223ReceivingContract(_to);
+            receiver.tokenFallback(msg.sender, _value, _empty);
+        }
+        emit Transfer(_from, _to, _value);
+        return true;
     }
 
     /**
@@ -372,61 +376,56 @@ contract COND is ERC20 {
 
     function getBonus(uint256 _tokensBought)public view returns(uint256){
         uint256 bonus = 0;
-        /*April 6- April 13 -- 20%
-        April 14- April 21 -- 10%
-        April 22 - May 3-- 5%
+        /*April 10- May 2 -- 30%
 
-        ICO BONUS WEEKS:
-        June 1 - June 9 -- 20%
-        June 10 - June 17 -- 10%
-        June 18 - June 30 -- 5%
-        July 1 - July 9 -- No bonus
+        ICO BONUS (ETH):
+            100 to 500 ETH, 35% Bonus
+            501 to 1,000 ETH, 40% Bonus
+            1,501 to 2,500 ETH,50% Bonus
+            2,501 to ETH,  60% Bonus
+
         */
-        // 1522972800 = 6 april 2018
-        // 1523577600 = 13 April 2018
-        // 1523664000 = 14 April 2018
-        // 1524268800 = 21 April 2018
-        // 1524355200 = 22 April 2018
-        // 1525305600 = 3 April 2018
-        // 1525392000 = 4 may 2018
-        // 1527811200 = 1 june 2018
-        // 1528502400 = 9 june 2018
-        // 1528588800 = 10 june 2018
-        // 1529193600 = 17 june 2018
-        // 1529280000 = 18 june 2018
-        // 1530316800 = 30 june 2018
-        // 1530403200 = 1 july 2018
-        // 1531094400 = 9 july 2018
-        if(saleType == 1){
-            //Presale is going on
-            if(now >= 1522972800 && now < 1523664000){
-                //6 april to before 14 april
-                bonus = _tokensBought*20/100;
-            }
-            else if(now >= 1523664000 && now < 1524355200){
-                //14 april to before 22 april
-                bonus = _tokensBought*10/100;
-            }
-            else if(now >= 1524355200 && now < 1525392000){
-                //Aprill 22 to before 4 may
-                bonus = _tokensBought*5/100;
+        // 1523318400 = 10 april 2018 (SOD)
+        // 1525305599 = 2 may 2018 (SOD)
+
+        if(_tokensBought < 220001){
+            if(now >= PREICO_START_TIME && now <= PREICO_END_TIME){
+                //10 april to end of 2 may
+                bonus = _tokensBought*30/100;
             }
         }
-        if(saleType == 2){
-            //ICO is going on
-            if(now >= 1527811200 && now < 1528588800){
-                // 1 june to before 10 june
-                bonus = _tokensBought*20/100;
-            }
-            else if(now >= 1528588800 && now < 1529280000){
-                // june 10 to before june 18
-                bonus = _tokensBought*10/100;
-            }
-            else if(now >= 1529280000 && now < 1530403200){
-                // june 18 to before july 1
-                bonus = _tokensBought*5/100;
-            }
+        else if(_tokensBought > 220000 && _tokensBought<=1100000){
+            bonus = _tokensBought*35/100;
         }
+        else if(_tokensBought > 1100000 && _tokensBought<=2200000){
+            bonus = _tokensBought*40/100;
+        }
+        else if(_tokensBought > 1100000 && _tokensBought<=2200000){
+            bonus = _tokensBought*50/100;
+        }
+
+        // if(saleType == 1){
+        //     //Presale is going on
+        //     if(now >= 1523318400 && now < 1525305600){
+        //         //10 april to end of 2 may
+        //         bonus = _tokensBought*30/100;
+        //     }
+        // }
+        // if(saleType == 2){
+        //     //ICO is going on
+        //     if(now >= 1527811200 && now < 1528588800){
+        //         // 1 june to before 10 june
+        //         bonus = _tokensBought*20/100;
+        //     }
+        //     else if(now >= 1528588800 && now < 1529280000){
+        //         // june 10 to before june 18
+        //         bonus = _tokensBought*10/100;
+        //     }
+        //     else if(now >= 1529280000 && now < 1530403200){
+        //         // june 18 to before july 1
+        //         bonus = _tokensBought*5/100;
+        //     }
+        // }
         return bonus;
     }
     function buyTokens(address beneficiary) internal validTimeframe {
