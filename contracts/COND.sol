@@ -175,6 +175,8 @@ contract COND is ERC20 {
     mapping(address => mapping(address => uint256)) allowed;
     //Mapping to relate number of token to the account
     mapping(address => uint256) balances;
+    //Mapping to keep track of whitelisted accounts
+    mapping(address => bool) whitelist;
 
     function COND(uint256 _startTime,uint256 _endTime,address _ethSenderAddress) public{
         totalSupply = 0;
@@ -218,6 +220,11 @@ contract COND is ERC20 {
         _;
     }
 
+   modifier onlyWhitelist(address _toBeChecked) {
+    require(whitelist[_toBeChecked] == true);
+    _;
+  } 
+
     function setEthCollector(address _ethCollector) public onlyOwner{
         require(_ethCollector != address(0));
         ethCollector = _ethCollector;
@@ -249,6 +256,40 @@ contract COND is ERC20 {
         }
     }
 
+     /**
+    * @dev Check if the address being whitelisted
+    *
+    * @param _address The address which you want to verify
+    * @return A bool specifying if the address is already present in whiteList
+    */
+    function isWhiteListed(address _address) public view returns(bool){
+        assert(_address != address(0) );
+        if(whitelist[msg.sender] == true)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+    * @dev to add address to whitelist
+    *
+    * @param _address The address which you want to add
+    */
+    function enableWhitelist(address _address) public {
+    whitelist[_address] = true;
+    }
+
+    /**
+    * @dev to remove address from whitelist
+    *
+    * @param _address The address which you want to remove from whiteList
+    */
+    function disableWhitelist(address _address) public {
+    whitelist[_address] = false;
+    }
+
+
     /**
     * @dev Check balance of given account address
     *
@@ -266,7 +307,7 @@ contract COND is ERC20 {
     * @param _value the amount of tokens to be transferred
     * @return A bool if the transfer was a success or not
     */
-    function transfer(address _to, uint _value) onlyUnlocked onlyPayloadSize(2 * 32) public returns(bool _success) {
+    function transfer(address _to, uint _value) onlyUnlocked onlyPayloadSize(2 * 32) public onlyWhitelist(_to) returns(bool _success) {
         require( _to != address(0) );
         bytes memory _empty;
         assert((balances[msg.sender] >= _value) && _value > 0 && _to != address(0));
@@ -288,7 +329,7 @@ contract COND is ERC20 {
     * @param _data additional information of account from where to transfer from
     * @return A bool if the transfer was a success or not
     */
-    function transfer(address _to, uint _value, bytes _data) onlyUnlocked onlyPayloadSize(3 * 32) public returns(bool _success) {
+    function transfer(address _to, uint _value, bytes _data) onlyUnlocked onlyPayloadSize(3 * 32) public onlyWhitelist(_to) returns(bool _success) {
         assert((balances[msg.sender] >= _value) && _value > 0 && _to != address(0));
         balances[msg.sender] = balances[msg.sender].Sub(_value);
         balances[_to] = balances[_to].Add(_value);
@@ -309,7 +350,7 @@ contract COND is ERC20 {
     * @param _value the amount of tokens to be transferred
     * @return A bool if the transfer was a success or not
     */
-    function transferFrom(address _from, address _to, uint256 _value) onlyPayloadSize(3*32) public onlyUnlocked returns (bool){
+    function transferFrom(address _from, address _to, uint256 _value) onlyPayloadSize(3*32) public onlyUnlocked onlyWhitelist(_to) returns (bool){
         bytes memory _empty;
         assert((_value > 0)
            && (_to != address(0))
@@ -354,7 +395,7 @@ contract COND is ERC20 {
         }
     }
 
-    function mintAndTransfer(address beneficiary, uint256 tokensToBeTransferred) public validTimeframe onlyOwner {
+    function mintAndTransfer(address beneficiary, uint256 tokensToBeTransferred) public validTimeframe onlyOwner onlyWhitelist(beneficiary) {
         require(totalSupply.Add(tokensToBeTransferred) <= MAXCAP);
         totalSupply = totalSupply.Add(tokensToBeTransferred);
         balances[beneficiary] = balances[beneficiary].Add(tokensToBeTransferred);
@@ -420,10 +461,12 @@ contract COND is ERC20 {
         }
         return bonus;
     }
-    function buyTokens(address beneficiary) internal validTimeframe {
+    function buyTokens(address beneficiary) internal validTimeframe onlyWhitelist(beneficiary) {
         uint256 tokensBought = msg.value.Mul(PRICE);
         tokensBought = tokensBought.Add(getBonus(tokensBought));
         balances[beneficiary] = balances[beneficiary].Add(tokensBought);
+       /*var newBanlance = balances[beneficiary].Add(tokensBought);
+       balances[beneficiary] = newBalance; */
         totalSupply = totalSupply.Add(tokensBought);
 
         assert(totalSupply <= HARD_CAP);
