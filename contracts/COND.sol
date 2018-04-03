@@ -160,9 +160,9 @@ contract COND is ERC20 {
     //number of tokens available for 1 eth
     uint256 public constant PRICE=2200;
     //maximum number of tokens
-    uint256 constant MAXCAP = 1e9*1e18;
+    uint256 constant MAXCAP = 8.25e8*1e18;
     //maximum number of tokens available for Sale
-    uint256 constant HARD_CAP = 5e8*1e18;
+    uint256 constant HARD_CAP = 4.125e8*1e18;
     //the account which will receive all balance
     address ethCollector;
     //to save total number of ethers received
@@ -264,7 +264,7 @@ contract COND is ERC20 {
     */
     function isWhiteListed(address _address) public view returns(bool){
         assert(_address != address(0) );
-        if(whitelist[msg.sender] == true)
+        if(whitelist[_address] == true)
         {
             return true;
         }
@@ -276,8 +276,9 @@ contract COND is ERC20 {
     *
     * @param _address The address which you want to add
     */
-    function enableWhitelist(address _address) public {
+    function enableWhitelist(address _address) public onlyOwner{
     whitelist[_address] = true;
+
     }
 
     /**
