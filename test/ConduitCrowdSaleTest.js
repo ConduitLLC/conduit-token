@@ -53,6 +53,11 @@ contract('CondToken', async function(accounts) {
     assert.equal("900",await token.balanceOf(accounts[0])); 
  }); 
 
+/* it("should be pausable by owner", async function() {
+    await token.pause();
+    assert.equal(false,  await token.isSaleRunning());
+ });
+
   /*it("should be able to approve sender allowance ", async function() {
    assert.equal("0",await token.allowance(accounts[0],accounts[5]));
    assert.equal("100",await token.balanceOf(accounts[5])); 

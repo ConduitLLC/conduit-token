@@ -1,6 +1,6 @@
 var ConduitToken = artifacts.require("COND");
-var StratTime = 1522671125;
-var EndTime = 1522843925;
+var StratTime = 1523170145;
+var EndTime = 1524034145;
 var ethSenderAddress = "0x6330a553fc93768f612722bb8c2ec78ac90b3bbc";
 
 

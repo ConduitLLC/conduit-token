@@ -5,25 +5,25 @@ pragma solidity  ^0.4.21;
  */
 library SafeMath {
 
-  function Mul(uint a, uint b) internal pure returns (uint) {
+  function mul(uint a, uint b) internal pure returns (uint) {
     uint256 c = a * b;
     assert(a == 0 || c / a == b);
     return c;
   }
 
-  function Div(uint a, uint b) internal pure returns (uint) {
+  function div(uint a, uint b) internal pure returns (uint) {
     //assert(b > 0); // Solidity automatically throws when Dividing by 0
     uint256 c = a / b;
     // assert(a == b * c + a % b); // There is no case in which this doesn't hold
     return c;
   }
 
-  function Sub(uint a, uint b) internal pure returns (uint) {
+   function sub(uint256 a, uint256 b) internal pure returns (uint256) {
     assert(b <= a);
     return a - b;
   }
 
-  function Add(uint a, uint b) internal pure returns (uint) {
+  function add(uint256 a, uint256 b) internal pure returns (uint256) {
     uint256 c = a + b;
     assert(c >= a);
     return c;
@@ -198,7 +198,7 @@ contract COND is ERC20 {
 
     function countDownToEndCrowdsale() public view returns(uint256){
         assert(isSaleRunning());
-        return endTime.Sub(now);
+        return endTime.sub(now);
     }
     //events
     event StateChanged(bool);
@@ -312,8 +312,8 @@ contract COND is ERC20 {
         require( _to != address(0) );
         bytes memory _empty;
         assert((balances[msg.sender] >= _value) && _value > 0 && _to != address(0));
-        balances[msg.sender] = balances[msg.sender].Sub(_value);
-        balances[_to] = balances[_to].Add(_value);
+        balances[msg.sender] = balances[msg.sender].sub(_value);
+        balances[_to] = balances[_to].add(_value);
         if(isContract(_to)){
             ERC223ReceivingContract receiver = ERC223ReceivingContract(_to);
             receiver.tokenFallback(msg.sender, _value, _empty);
@@ -332,8 +332,8 @@ contract COND is ERC20 {
     */
     function transfer(address _to, uint _value, bytes _data) onlyUnlocked onlyPayloadSize(3 * 32) public onlyWhitelist(_to) returns(bool _success) {
         assert((balances[msg.sender] >= _value) && _value > 0 && _to != address(0));
-        balances[msg.sender] = balances[msg.sender].Sub(_value);
-        balances[_to] = balances[_to].Add(_value);
+        balances[msg.sender] = balances[msg.sender].sub(_value);
+        balances[_to] = balances[_to].add(_value);
         if(isContract(_to)){
             ERC223ReceivingContract receiver = ERC223ReceivingContract(_to);
             receiver.tokenFallback(msg.sender, _value, _data);
@@ -351,22 +351,40 @@ contract COND is ERC20 {
     * @param _value the amount of tokens to be transferred
     * @return A bool if the transfer was a success or not
     */
-    function transferFrom(address _from, address _to, uint256 _value) onlyPayloadSize(3*32) public onlyUnlocked onlyWhitelist(_to) returns (bool){
+    function transferFrom(address _from, address _to, uint256 _value) onlyPayloadSize(3*32) public onlyUnlocked returns (bool success){
         bytes memory _empty;
-        assert((_value > 0)
-           && (_to != address(0))
-           && (_from != address(0))
-           && (allowed[_from][msg.sender] >= _value ));
-       balances[_from] = balances[_from].Sub(_value);
-       balances[_to] = balances[_to].Add(_value);
-       allowed[_from][msg.sender] = allowed[_from][msg.sender].Sub(_value);
+        require(_to != address(0));
+        require(_value <= balances[_from]);
+        require(_value <= allowed[_from][msg.sender]);
+
+       balances[_from] = balances[_from].sub(_value);
+       allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
+       balances[_to] = balances[_to].add(_value);
+      
        if(isContract(_to)){
            ERC223ReceivingContract receiver = ERC223ReceivingContract(_to);
            receiver.tokenFallback(msg.sender, _value, _empty);
        }
        emit Transfer(_from, _to, _value);
        return true;
-    }
+    } 
+
+    /* function transferFrom(address _from, address _to, uint256 _amount) onlyPayloadSize(3 * 32) public onlyUnlocked returns (bool success) {
+
+        require(_to != address(0));
+        require(_amount <= balances[_from]);
+        require(_amount <= allowed[_from][msg.sender]);
+        
+        balances[_from] = balances[_from].sub(_amount);
+        allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_amount);
+        balances[_to] = balances[_to].add(_amount);
+          if(isContract(_to)){
+           ERC223ReceivingContract receiver = ERC223ReceivingContract(_to);
+           receiver.tokenFallback(msg.sender, _value, _empty);
+       }
+        emit Transfer(_from, _to, _amount);
+        return true;
+    } */
 
     /**
     * @dev Function to check the amount of tokens that an owner has allowed a spender to recieve from owner.
@@ -397,9 +415,9 @@ contract COND is ERC20 {
     }
 
     function mintAndTransfer(address beneficiary, uint256 tokensToBeTransferred) public validTimeframe onlyOwner onlyWhitelist(beneficiary) {
-        require(totalSupply.Add(tokensToBeTransferred) <= MAXCAP);
-        totalSupply = totalSupply.Add(tokensToBeTransferred);
-        balances[beneficiary] = balances[beneficiary].Add(tokensToBeTransferred);
+        require(totalSupply.add(tokensToBeTransferred) <= MAXCAP);
+        totalSupply = totalSupply.add(tokensToBeTransferred);
+        balances[beneficiary] = balances[beneficiary].add(tokensToBeTransferred);
         emit Transfer(0x0, beneficiary ,tokensToBeTransferred);
     }
 
@@ -463,17 +481,18 @@ contract COND is ERC20 {
         return bonus;
     }
     function buyTokens(address beneficiary) internal validTimeframe onlyWhitelist(beneficiary) {
-        uint256 tokensBought = msg.value.Mul(PRICE);
-        tokensBought = tokensBought.Add(getBonus(tokensBought));
-        balances[beneficiary] = balances[beneficiary].Add(tokensBought);
-       /*var newBanlance = balances[beneficiary].Add(tokensBought);
+        uint256 tokensBought = msg.value.mul(PRICE);
+        tokensBought = tokensBought.add(getBonus(tokensBought));
+        balances[beneficiary] = balances[beneficiary].add(tokensBought);
+       /*uint256 newBanlance = balances[beneficiary].Add(tokensBought);
        balances[beneficiary] = newBalance; */
-        totalSupply = totalSupply.Add(tokensBought);
+        totalSupply = totalSupply.add(tokensBought);
 
         assert(totalSupply <= HARD_CAP);
-        totalWeiReceived = totalWeiReceived.Add(msg.value);
+        totalWeiReceived = totalWeiReceived.add(msg.value);
+            emit Transfer(0x0, beneficiary, tokensBought);
         ethCollector.transfer(msg.value);
-        emit Transfer(0x0, beneficiary, tokensBought);
+    
     }
 
     /**
@@ -482,7 +501,7 @@ contract COND is ERC20 {
     function finalize() public onlyUnlocked onlyOwner {
         //Make sure Sale is not running
         //If sale is running, then check if the hard cap has been reached or not
-        assert(!isSaleRunning() || (HARD_CAP.Sub(totalSupply)) <= 1e18);
+        assert(!isSaleRunning() || (HARD_CAP.sub(totalSupply)) <= 1e18);
         endTime = now;
 
         //enable transferring of tokens among token holders
