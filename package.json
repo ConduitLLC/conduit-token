@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/ConduitLLC/ico-smartcontracts#readme",
   "dependencies": {
-    "web3": "^1.0.0-beta2",
+    "web3": "github:ethereum/web3.js",
     "zeppelin-solidity": "1.6.0"
   }
 }
